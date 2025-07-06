@@ -1,294 +1,660 @@
-import React, { useState } from 'react';
-import { ChevronRight, Star, Users, Calendar, DollarSign, Briefcase, Music, Mic } from 'lucide-react';
-
-const SpeakerRecommendationEngine = () => {
-  const [currentStep, setCurrentStep] = useState(0);
-  const [responses, setResponses] = useState({});
-  const [showResults, setShowResults] = useState(false);
-
-  // Sample speaker data
-  const speakers = [
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      type: "Motivational Speaker",
-      specialties: ["Leadership", "Innovation", "Change Management"],
-      industries: ["Technology", "Healthcare", "Finance"],
-      audienceSize: "50-2000",
-      priceRange: "$$",
-      rating: 4.9,
-      image: "🎯",
-      bio: "Former Fortune 500 CEO turned motivational speaker specializing in digital transformation.",
-      testimonial: "Sarah's insights on leadership transformed our company culture."
-    },
-    {
-      id: 2,
-      name: "Marcus Chen",
-      type: "Corporate Performer",
-      specialties: ["Team Building", "Entertainment", "Corporate Jazz"],
-      industries: ["All Industries"],
-      audienceSize: "25-500",
-      priceRange: "$",
-      rating: 4.8,
-      image: "🎷",
-      bio: "Professional jazz musician who creates unforgettable corporate entertainment experiences.",
-      testimonial: "Marcus brought incredible energy to our annual conference."
-    },
-    {
-      id: 3,
-      name: "Dr. Rachel Williams",
-      type: "Motivational Speaker",
-      specialties: ["Resilience", "Mental Health", "Productivity"],
-      industries: ["Healthcare", "Education", "Manufacturing"],
-      audienceSize: "100-5000",
-      priceRange: "$$$",
-      rating: 4.9,
-      image: "🧠",
-      bio: "Neuroscientist and bestselling author on peak performance and mental resilience.",
-      testimonial: "Dr. Williams' presentation was both scientifically fascinating and incredibly practical."
-    }
-  ];
-
-  const questions = [
-    {
-      id: 'eventType',
-      question: 'What type of event are you planning?',
-      options: [
-        'Annual Conference',
-        'Sales Kickoff',
-        'Team Building Event',
-        'Product Launch',
-        'Awards Ceremony',
-        'Training Workshop'
-      ]
-    },
-    {
-      id: 'audienceSize',
-      question: 'How many attendees will you have?',
-      options: [
-        '25-50 people',
-        '50-100 people',
-        '100-500 people',
-        '500-1000 people',
-        '1000+ people'
-      ]
-    },
-    {
-      id: 'industry',
-      question: 'What industry is your company in?',
-      options: [
-        'Technology',
-        'Healthcare',
-        'Finance',
-        'Manufacturing',
-        'Education',
-        'Retail',
-        'Other'
-      ]
-    },
-    {
-      id: 'goals',
-      question: 'What are your main goals for this event?',
-      options: [
-        'Motivate the team',
-        'Educate on new trends',
-        'Celebrate achievements',
-        'Build team unity',
-        'Launch new initiatives',
-        'Entertainment & networking'
-      ]
-    },
-    {
-      id: 'speakerType',
-      question: 'What type of speaker are you looking for?',
-      options: [
-        'Motivational Speaker',
-        'Industry Expert',
-        'Corporate Performer/Musician',
-        'Celebrity Speaker',
-        'Team Building Facilitator'
-      ]
-    },
-    {
-      id: 'budget',
-      question: 'What\'s your speaker budget range?',
-      options: [
-        'Under $5,000',
-        '$5,000 - $15,000',
-        '$15,000 - $30,000',
-        '$30,000 - $50,000',
-        '$50,000+'
-      ]
-    }
-  ];
-
-  const handleAnswer = (questionId, answer) => {
-    setResponses({ ...responses, [questionId]: answer });
-    
-    if (currentStep < questions.length - 1) {
-      setCurrentStep(currentStep + 1);
-    } else {
-      setShowResults(true);
-    }
-  };
-
-  const getRecommendations = () => {
-    // Simple matching algorithm - in reality this would be much more sophisticated
-    return speakers.filter(speaker => {
-      if (responses.speakerType && !speaker.type.toLowerCase().includes(responses.speakerType.toLowerCase().split(' ')[0])) {
-        return false;
-      }
-      if (responses.industry && speaker.industries.length > 0 && 
-          !speaker.industries.includes(responses.industry) && 
-          !speaker.industries.includes('All Industries')) {
-        return false;
-      }
-      return true;
-    }).sort((a, b) => b.rating - a.rating);
-  };
-
-  const resetEngine = () => {
-    setCurrentStep(0);
-    setResponses({});
-    setShowResults(false);
-  };
-
-  if (showResults) {
-    const recommendations = getRecommendations();
-    
-    return (
-      <div className="max-w-4xl mx-auto p-6 bg-white">
-        <div className="text-center mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2">Your Personalized Speaker Recommendations</h2>
-          <p className="text-gray-600">Based on your event requirements, here are our top matches:</p>
-        </div>
-
-        <div className="grid gap-6 mb-8">
-          {recommendations.map((speaker, index) => (
-            <div key={speaker.id} className="border rounded-lg p-6 shadow-lg hover:shadow-xl transition-shadow">
-              <div className="flex items-start gap-4">
-                <div className="text-4xl">{speaker.image}</div>
-                <div className="flex-1">
-                  <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-xl font-bold text-gray-800">{speaker.name}</h3>
-                    <div className="flex items-center gap-1">
-                      <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                      <span className="text-sm font-medium">{speaker.rating}</span>
-                    </div>
-                  </div>
-                  
-                  <div className="flex items-center gap-4 mb-3 text-sm text-gray-600">
-                    <div className="flex items-center gap-1">
-                      <Mic className="w-4 h-4" />
-                      {speaker.type}
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <Users className="w-4 h-4" />
-                      {speaker.audienceSize} attendees
-                    </div>
-                    <div className="flex items-center gap-1">
-                      <DollarSign className="w-4 h-4" />
-                      {speaker.priceRange}
-                    </div>
-                  </div>
-
-                  <p className="text-gray-700 mb-3">{speaker.bio}</p>
-                  
-                  <div className="mb-3">
-                    <span className="text-sm font-medium text-gray-600">Specialties: </span>
-                    {speaker.specialties.map((specialty, i) => (
-                      <span key={i} className="inline-block bg-blue-100 text-blue-800 text-xs px-2 py-1 rounded-full mr-1 mb-1">
-                        {specialty}
-                      </span>
-                    ))}
-                  </div>
-
-                  <blockquote className="italic text-gray-600 border-l-4 border-blue-500 pl-4">
-                    "{speaker.testimonial}"
-                  </blockquote>
-                </div>
-              </div>
-              
-              <div className="mt-4 flex gap-3">
-                <button className="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors">
-                  View Full Profile
-                </button>
-                <button className="border border-blue-600 text-blue-600 px-6 py-2 rounded-lg hover:bg-blue-50 transition-colors">
-                  Request Quote
-                </button>
-              </div>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Speaker Recommendation Engine</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f9fafb;
+            color: #374151;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 24px;
+            background: white;
+            min-height: 100vh;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .header h1 {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            color: #6b7280;
+        }
+        
+        .progress-container {
+            margin-bottom: 32px;
+        }
+        
+        .progress-info {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            font-size: 0.875rem;
+            color: #6b7280;
+        }
+        
+        .progress-bar {
+            width: 100%;
+            height: 8px;
+            background-color: #e5e7eb;
+            border-radius: 9999px;
+            overflow: hidden;
+        }
+        
+        .progress-fill {
+            height: 100%;
+            background-color: #2563eb;
+            transition: width 0.3s ease;
+            border-radius: 9999px;
+        }
+        
+        .question-container {
+            margin-bottom: 32px;
+        }
+        
+        .question-title {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 24px;
+        }
+        
+        .options-grid {
+            display: grid;
+            gap: 12px;
+        }
+        
+        .option-button {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 8px;
+            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            text-align: left;
+            font-size: 1rem;
+        }
+        
+        .option-button:hover {
+            border-color: #3b82f6;
+            background-color: #eff6ff;
+        }
+        
+        .option-text {
+            font-weight: 500;
+            color: #374151;
+        }
+        
+        .chevron {
+            width: 20px;
+            height: 20px;
+            color: #9ca3af;
+        }
+        
+        .back-button {
+            color: #2563eb;
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-weight: 500;
+            padding: 8px 0;
+        }
+        
+        .back-button:hover {
+            color: #1d4ed8;
+        }
+        
+        .results-container {
+            max-width: 1000px;
+        }
+        
+        .results-header {
+            text-align: center;
+            margin-bottom: 32px;
+        }
+        
+        .results-header h2 {
+            font-size: 1.875rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .speaker-card {
+            border: 1px solid #e5e7eb;
+            border-radius: 8px;
+            padding: 24px;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .speaker-card:hover {
+            box-shadow: 0 10px 15px rgba(0,0,0,0.1);
+        }
+        
+        .speaker-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .speaker-avatar {
+            font-size: 2.5rem;
+            flex-shrink: 0;
+        }
+        
+        .speaker-info {
+            flex: 1;
+        }
+        
+        .speaker-name-rating {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+        
+        .speaker-name {
+            font-size: 1.25rem;
+            font-weight: bold;
+            color: #1f2937;
+        }
+        
+        .rating {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+        
+        .star {
+            width: 16px;
+            height: 16px;
+            color: #fbbf24;
+            fill: currentColor;
+        }
+        
+        .speaker-meta {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 12px;
+            font-size: 0.875rem;
+            color: #6b7280;
+            flex-wrap: wrap;
+        }
+        
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        
+        .speaker-bio {
+            color: #374151;
+            margin-bottom: 12px;
+        }
+        
+        .specialties {
+            margin-bottom: 12px;
+        }
+        
+        .specialties-label {
+            font-size: 0.875rem;
+            font-weight: 500;
+            color: #6b7280;
+        }
+        
+        .specialty-tag {
+            display: inline-block;
+            background: #dbeafe;
+            color: #1e40af;
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 9999px;
+            margin-right: 4px;
+            margin-bottom: 4px;
+        }
+        
+        .testimonial {
+            font-style: italic;
+            color: #6b7280;
+            border-left: 4px solid #3b82f6;
+            padding-left: 16px;
+            margin-bottom: 16px;
+        }
+        
+        .speaker-actions {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .btn {
+            padding: 8px 24px;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            border: none;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-primary {
+            background: #2563eb;
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+        
+        .btn-secondary {
+            background: white;
+            color: #2563eb;
+            border: 1px solid #2563eb;
+        }
+        
+        .btn-secondary:hover {
+            background: #eff6ff;
+        }
+        
+        .reset-container {
+            text-align: center;
+            margin: 32px 0;
+        }
+        
+        .btn-gray {
+            background: #4b5563;
+            color: white;
+        }
+        
+        .btn-gray:hover {
+            background: #374151;
+        }
+        
+        .cta-section {
+            background: #eff6ff;
+            padding: 24px;
+            border-radius: 8px;
+            margin-top: 32px;
+        }
+        
+        .cta-section h3 {
+            font-size: 1.125rem;
+            font-weight: bold;
+            color: #1f2937;
+            margin-bottom: 8px;
+        }
+        
+        .cta-section p {
+            color: #374151;
+            margin-bottom: 16px;
+        }
+        
+        .hidden {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Questionnaire Section -->
+        <div id="questionnaire">
+            <div class="header">
+                <h1>Find Your Perfect Speaker</h1>
+                <p>Answer a few quick questions and we'll recommend speakers tailored to your event</p>
             </div>
-          ))}
+
+            <div class="progress-container">
+                <div class="progress-info">
+                    <span id="question-counter">Question 1 of 6</span>
+                    <span id="progress-percent">17% Complete</span>
+                </div>
+                <div class="progress-bar">
+                    <div id="progress-fill" class="progress-fill" style="width: 17%"></div>
+                </div>
+            </div>
+
+            <div class="question-container">
+                <h2 id="question-title" class="question-title">What type of event are you planning?</h2>
+                <div id="options-container" class="options-grid">
+                    <!-- Options will be populated by JavaScript -->
+                </div>
+            </div>
+
+            <button id="back-button" class="back-button hidden">← Previous Question</button>
         </div>
 
-        <div className="text-center">
-          <button 
-            onClick={resetEngine}
-            className="bg-gray-600 text-white px-6 py-3 rounded-lg hover:bg-gray-700 transition-colors"
-          >
-            Start Over
-          </button>
+        <!-- Results Section -->
+        <div id="results" class="results-container hidden">
+            <div class="results-header">
+                <h2>Your Personalized Speaker Recommendations</h2>
+                <p>Based on your event requirements, here are our top matches:</p>
+            </div>
+
+            <div id="speakers-container">
+                <!-- Speaker cards will be populated by JavaScript -->
+            </div>
+
+            <div class="reset-container">
+                <button id="reset-button" class="btn btn-gray">Start Over</button>
+            </div>
+
+            <div class="cta-section">
+                <h3>Ready to Book Your Perfect Speaker?</h3>
+                <p>Our team is standing by to help you finalize the details and ensure your event is a huge success.</p>
+                <button class="btn btn-primary">Contact First Class Talent Now</button>
+            </div>
         </div>
-
-        <div className="mt-8 p-6 bg-blue-50 rounded-lg">
-          <h3 className="text-lg font-bold text-gray-800 mb-2">Ready to Book Your Perfect Speaker?</h3>
-          <p className="text-gray-700 mb-4">Our team is standing by to help you finalize the details and ensure your event is a huge success.</p>
-          <button className="bg-blue-600 text-white px-8 py-3 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-            Contact First Class Talent Now
-          </button>
-        </div>
-      </div>
-    );
-  }
-
-  const currentQuestion = questions[currentStep];
-
-  return (
-    <div className="max-w-2xl mx-auto p-6 bg-white">
-      <div className="text-center mb-8">
-        <h1 className="text-3xl font-bold text-gray-800 mb-2">Find Your Perfect Speaker</h1>
-        <p className="text-gray-600">Answer a few quick questions and we'll recommend speakers tailored to your event</p>
-      </div>
-
-      <div className="mb-8">
-        <div className="flex justify-between items-center mb-4">
-          <span className="text-sm text-gray-500">Question {currentStep + 1} of {questions.length}</span>
-          <span className="text-sm text-gray-500">{Math.round(((currentStep + 1) / questions.length) * 100)}% Complete</span>
-        </div>
-        <div className="w-full bg-gray-200 rounded-full h-2">
-          <div 
-            className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-            style={{ width: `${((currentStep + 1) / questions.length) * 100}%` }}
-          ></div>
-        </div>
-      </div>
-
-      <div className="mb-8">
-        <h2 className="text-xl font-bold text-gray-800 mb-6">{currentQuestion.question}</h2>
-        <div className="grid gap-3">
-          {currentQuestion.options.map((option, index) => (
-            <button
-              key={index}
-              onClick={() => handleAnswer(currentQuestion.id, option)}
-              className="flex items-center justify-between p-4 border-2 border-gray-200 rounded-lg hover:border-blue-500 hover:bg-blue-50 transition-all duration-200 text-left"
-            >
-              <span className="font-medium text-gray-700">{option}</span>
-              <ChevronRight className="w-5 h-5 text-gray-400" />
-            </button>
-          ))}
-        </div>
-      </div>
-
-      {currentStep > 0 && (
-        <button
-          onClick={() => setCurrentStep(currentStep - 1)}
-          className="text-blue-600 hover:text-blue-700 font-medium"
-        >
-          ← Previous Question
-        </button>
-      )}
     </div>
-  );
-};
 
-export default SpeakerRecommendationEngine;
+    <script>
+        // Data and state
+        let currentStep = 0;
+        let responses = {};
+
+        const questions = [
+            {
+                id: 'eventType',
+                question: 'What type of event are you planning?',
+                options: [
+                    'Annual Conference',
+                    'Sales Kickoff',
+                    'Team Building Event',
+                    'Product Launch',
+                    'Awards Ceremony',
+                    'Training Workshop'
+                ]
+            },
+            {
+                id: 'audienceSize',
+                question: 'How many attendees will you have?',
+                options: [
+                    '25-50 people',
+                    '50-100 people',
+                    '100-500 people',
+                    '500-1000 people',
+                    '1000+ people'
+                ]
+            },
+            {
+                id: 'industry',
+                question: 'What industry is your company in?',
+                options: [
+                    'Technology',
+                    'Healthcare',
+                    'Finance',
+                    'Manufacturing',
+                    'Education',
+                    'Retail',
+                    'Other'
+                ]
+            },
+            {
+                id: 'goals',
+                question: 'What are your main goals for this event?',
+                options: [
+                    'Motivate the team',
+                    'Educate on new trends',
+                    'Celebrate achievements',
+                    'Build team unity',
+                    'Launch new initiatives',
+                    'Entertainment & networking'
+                ]
+            },
+            {
+                id: 'speakerType',
+                question: 'What type of speaker are you looking for?',
+                options: [
+                    'Motivational Speaker',
+                    'Industry Expert',
+                    'Corporate Performer/Musician',
+                    'Celebrity Speaker',
+                    'Team Building Facilitator'
+                ]
+            },
+            {
+                id: 'budget',
+                question: 'What\'s your speaker budget range?',
+                options: [
+                    'Under $5,000',
+                    '$5,000 - $15,000',
+                    '$15,000 - $30,000',
+                    '$30,000 - $50,000',
+                    '$50,000+'
+                ]
+            }
+        ];
+
+        const speakers = [
+            {
+                id: 1,
+                name: "Sarah Johnson",
+                type: "Motivational Speaker",
+                specialties: ["Leadership", "Innovation", "Change Management"],
+                industries: ["Technology", "Healthcare", "Finance"],
+                audienceSize: "50-2000",
+                priceRange: "$$",
+                rating: 4.9,
+                image: "🎯",
+                bio: "Former Fortune 500 CEO turned motivational speaker specializing in digital transformation.",
+                testimonial: "Sarah's insights on leadership transformed our company culture."
+            },
+            {
+                id: 2,
+                name: "Marcus Chen",
+                type: "Corporate Performer",
+                specialties: ["Team Building", "Entertainment", "Corporate Jazz"],
+                industries: ["All Industries"],
+                audienceSize: "25-500",
+                priceRange: "$",
+                rating: 4.8,
+                image: "🎷",
+                bio: "Professional jazz musician who creates unforgettable corporate entertainment experiences.",
+                testimonial: "Marcus brought incredible energy to our annual conference."
+            },
+            {
+                id: 3,
+                name: "Dr. Rachel Williams",
+                type: "Motivational Speaker",
+                specialties: ["Resilience", "Mental Health", "Productivity"],
+                industries: ["Healthcare", "Education", "Manufacturing"],
+                audienceSize: "100-5000",
+                priceRange: "$$$",
+                rating: 4.9,
+                image: "🧠",
+                bio: "Neuroscientist and bestselling author on peak performance and mental resilience.",
+                testimonial: "Dr. Williams' presentation was both scientifically fascinating and incredibly practical."
+            }
+        ];
+
+        // DOM elements
+        const questionnaireEl = document.getElementById('questionnaire');
+        const resultsEl = document.getElementById('results');
+        const questionCounterEl = document.getElementById('question-counter');
+        const progressPercentEl = document.getElementById('progress-percent');
+        const progressFillEl = document.getElementById('progress-fill');
+        const questionTitleEl = document.getElementById('question-title');
+        const optionsContainerEl = document.getElementById('options-container');
+        const backButtonEl = document.getElementById('back-button');
+        const speakersContainerEl = document.getElementById('speakers-container');
+        const resetButtonEl = document.getElementById('reset-button');
+
+        // Functions
+        function updateUI() {
+            const currentQuestion = questions[currentStep];
+            const progress = ((currentStep + 1) / questions.length) * 100;
+
+            questionCounterEl.textContent = `Question ${currentStep + 1} of ${questions.length}`;
+            progressPercentEl.textContent = `${Math.round(progress)}% Complete`;
+            progressFillEl.style.width = `${progress}%`;
+            questionTitleEl.textContent = currentQuestion.question;
+
+            // Show/hide back button
+            if (currentStep > 0) {
+                backButtonEl.classList.remove('hidden');
+            } else {
+                backButtonEl.classList.add('hidden');
+            }
+
+            // Populate options
+            optionsContainerEl.innerHTML = '';
+            currentQuestion.options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-button';
+                button.innerHTML = `
+                    <span class="option-text">${option}</span>
+                    <span class="chevron">→</span>
+                `;
+                button.addEventListener('click', () => handleAnswer(currentQuestion.id, option));
+                optionsContainerEl.appendChild(button);
+            });
+        }
+
+        function handleAnswer(questionId, answer) {
+            responses[questionId] = answer;
+            
+            if (currentStep < questions.length - 1) {
+                currentStep++;
+                updateUI();
+            } else {
+                showResults();
+            }
+        }
+
+        function showResults() {
+            questionnaireEl.classList.add('hidden');
+            resultsEl.classList.remove('hidden');
+            
+            const recommendations = getRecommendations();
+            displaySpeakers(recommendations);
+        }
+
+        function getRecommendations() {
+            return speakers.filter(speaker => {
+                if (responses.speakerType && !speaker.type.toLowerCase().includes(responses.speakerType.toLowerCase().split(' ')[0])) {
+                    return false;
+                }
+                if (responses.industry && speaker.industries.length > 0 && 
+                    !speaker.industries.includes(responses.industry) && 
+                    !speaker.industries.includes('All Industries')) {
+                    return false;
+                }
+                return true;
+            }).sort((a, b) => b.rating - a.rating);
+        }
+
+        function displaySpeakers(speakers) {
+            speakersContainerEl.innerHTML = '';
+            
+            speakers.forEach(speaker => {
+                const speakerCard = document.createElement('div');
+                speakerCard.className = 'speaker-card';
+                
+                const specialtiesTags = speaker.specialties.map(specialty => 
+                    `<span class="specialty-tag">${specialty}</span>`
+                ).join('');
+
+                speakerCard.innerHTML = `
+                    <div class="speaker-header">
+                        <div class="speaker-avatar">${speaker.image}</div>
+                        <div class="speaker-info">
+                            <div class="speaker-name-rating">
+                                <h3 class="speaker-name">${speaker.name}</h3>
+                                <div class="rating">
+                                    <span class="star">★</span>
+                                    <span>${speaker.rating}</span>
+                                </div>
+                            </div>
+                            
+                            <div class="speaker-meta">
+                                <div class="meta-item">
+                                    <span>🎤</span>
+                                    <span>${speaker.type}</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>👥</span>
+                                    <span>${speaker.audienceSize} attendees</span>
+                                </div>
+                                <div class="meta-item">
+                                    <span>💰</span>
+                                    <span>${speaker.priceRange}</span>
+                                </div>
+                            </div>
+
+                            <p class="speaker-bio">${speaker.bio}</p>
+                            
+                            <div class="specialties">
+                                <span class="specialties-label">Specialties: </span>
+                                ${specialtiesTags}
+                            </div>
+
+                            <blockquote class="testimonial">
+                                "${speaker.testimonial}"
+                            </blockquote>
+                        </div>
+                    </div>
+                    
+                    <div class="speaker-actions">
+                        <button class="btn btn-primary">View Full Profile</button>
+                        <button class="btn btn-secondary">Request Quote</button>
+                    </div>
+                `;
+                
+                speakersContainerEl.appendChild(speakerCard);
+            });
+        }
+
+        function resetEngine() {
+            currentStep = 0;
+            responses = {};
+            questionnaireEl.classList.remove('hidden');
+            resultsEl.classList.add('hidden');
+            updateUI();
+        }
+
+        // Event listeners
+        backButtonEl.addEventListener('click', () => {
+            if (currentStep > 0) {
+                currentStep--;
+                updateUI();
+            }
+        });
+
+        resetButtonEl.addEventListener('click', resetEngine);
+
+        // Initialize
+        updateUI();
+    </script>
+</body>
+</html>
